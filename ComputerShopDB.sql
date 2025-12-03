@@ -276,8 +276,20 @@ AND YEAR(s.SaleDate) = YEAR(GETDATE())
 GROUP BY e.Name, e.Surname, e.FatherName, p.Price, s.Quantity
 
 -- 24. Satılan hər məhsuldan 1% qazanc əldə etdiyini nəzərə alaraq cari ayda 
---  hər bir satıcının maaşını hesablayın.
-
+--     hər bir satıcının maaşını hesablayın.
+SELECT 
+    e.Id,
+    e.Name,
+    e.Surname,
+    e.Salary AS BaseSalary,
+    ISNULL(SUM(p.Price * s.Quantity * 0.01), 0) AS Bonus,
+    e.Salary + ISNULL(SUM(p.Price * s.Quantity * 0.01), 0) AS TotalSalary
+FROM Employees e
+JOIN Sales s ON s.EmployeeId = e.Id
+JOIN Products p ON p.Id = s.ProductId
+     AND MONTH(s.SaleDate) = MONTH(GETDATE())
+     AND YEAR(s.SaleDate) = YEAR(GETDATE())
+GROUP BY e.Id, e.Name, e.Surname, e.Salary;
 
 -- 25. Hər filial üzrə cari aydakı qazancı hesablayın.
 SELECT b.Name Branch, SUM(p.Price * s.Quantity) MonthlyAmount
@@ -294,13 +306,3 @@ FROM Sales s
 JOIN Products p ON s.ProductId = p.Id
 WHERE MONTH(SaleDate)=MONTH(GETDATE())
   AND YEAR(SaleDate) = YEAR(GETDATE());
-
-
-
-
-
-SELECT*FROM Categories
-SELECT*FROM Products
-SELECT*FROM Branches
-SELECT*FROM Employees
-SELECT*FROM Sales
