@@ -42,13 +42,73 @@ CREATE TABLE Sales(
     SaleDate DATE
 );
 
+INSERT INTO Categories (Name) VALUES
+('Laptop'),
+('Desktop'),
+('Monitor'),
+('Keyboard'),
+('Mouse'),
+('Printer'),
+('Network Device'),
+('Storage'),
+('Accessories'),
+('Tablet');
+
+INSERT INTO Products (CategoryId, Brand, Model, Price, Stock) VALUES
+(1, 'Lenovo', 'ThinkPad X1', 2800, 12),
+(1, 'HP', 'Pavilion 15', 1500, 20),
+(2, 'Dell', 'Optiplex 3080', 1300, 10),
+(3, 'Samsung', 'Odyssey G5', 900, 15),
+(4, 'Logitech', 'MX Keys', 170, 30),
+(5, 'Razer', 'DeathAdder', 80, 40),
+(6, 'Canon', 'LBP 6230', 320, 8),
+(7, 'TP-Link', 'Archer C6', 120, 25),
+(8, 'Seagate', 'Expansion 2TB', 140, 18),
+(9, 'Xiaomi', 'PowerBank 20k', 50, 50);
+
+INSERT INTO Branches (Name, Address) VALUES
+('Nərimanov', 'Nərimanov m/s yaxınlığı'),
+('28 May', 'Nizami küçəsi 45'),
+('Gənclik', 'F. Xoyski 98'),
+('Elmlər', 'H.Cavid pr. 12'),
+('Xalqlar', 'Xalqlar Dostluğu m/s'),
+('Neftçilər', 'Neftçilər pr. 78'),
+('Sahil', 'Sahil metrosu çıxışı'),
+('İnşaatçılar', 'İnşaatçılar pr. 33'),
+('Memar Əcəmi', 'Əcəmi metrosu'),
+('Sumqayıt', 'Sumqayıt şəhəri, 17 mk.');
+
+INSERT INTO Employees (BranchId, Name, Surname, FatherName, Age, Salary) VALUES
+(1, 'Murad', 'Quliyev', 'Elçin', 27, 900),
+(2, 'Aysel', 'Məmmədova', 'Mehman', 24, 850),
+(3, 'Elvin', 'Həsənov', 'Rövşən', 30, 1100),
+(4, 'Rəşad', 'Əliyev', 'Qalib', 33, 1400),
+(5, 'Nigar', 'Qasımova', 'Tahir', 25, 950),
+(6, 'Turan', 'Musalı', 'Vüqar', 26, 1000),
+(7, 'Ləman', 'Hüseynova', 'Ikram', 28, 1050),
+(8, 'Cavid', 'Abdullayev', 'Əziz', 33, 1300),
+(9, 'Aydan', 'Səlimova', 'Fikrət', 23, 800),
+(10,'Kamran', 'Rzayev', 'Nazim', 31, 1250);
+
+INSERT INTO Sales (ProductId, EmployeeId, BranchId, Quantity, SaleDate) VALUES
+(1, 1, 1, 2, '2025-12-01'),
+(2, 2, 2, 1, '2025-12-02'),
+(3, 3, 3, 3, '2025-12-03'),
+(4, 4, 4, 1, '2025-12-04'),
+(5, 5, 5, 5, '2025-12-05'),
+(6, 6, 6, 2, '2025-12-06'),
+(7, 7, 7, 1, '2025-12-07'),
+(8, 8, 8, 4, '2025-12-08'),
+(9, 9, 9, 3, '2025-12-09'),
+(10,10,10,2, '2025-12-10');
+
+
 SELECT*FROM Categories
 SELECT*FROM Products
 SELECT*FROM Branches
 SELECT*FROM Employees
 SELECT*FROM Sales
 
--- Modul-1 (Select) & Modul-5 (Joins)
 --  1. Bütün məhsulların siyahısına baxmaq üçün sorğu yazın
 SELECT*FROM Products;
 
@@ -111,6 +171,7 @@ FROM Sales s
 JOIN Employees e ON s.EmployeeId = e.Id
 JOIN Products p ON s.ProductId = p.Id
 WHERE MONTH(SaleDate)=MONTH(GETDATE())
+  AND YEAR(SaleDate) = YEAR(GETDATE())
 GROUP BY e.Name, e.Surname
 HAVING SUM(p.Price * s.Quantity) > 3000;
 
@@ -152,7 +213,8 @@ FROM Products;
 SELECT SUM(p.Price * s.Quantity) AS TotalThisMonth
 FROM Sales s
 JOIN Products p ON s.ProductId = p.Id
-WHERE MONTH(SaleDate)=MONTH(GETDATE());
+WHERE MONTH(SaleDate)=MONTH(GETDATE())
+  AND YEAR(SaleDate) = YEAR(GETDATE());
 
 --  18. Cari ayda ən çox satış edən işçinin məlumatlarını çıxaran sorğu yazın 
 SELECT TOP 1 e.*, SUM(p.Price * s.Quantity) AS TotalAmount
@@ -160,28 +222,19 @@ FROM Sales s
 JOIN Employees e ON s.EmployeeId = e.Id
 JOIN Products p ON s.ProductId = p.Id
 WHERE MONTH(SaleDate)=MONTH(GETDATE())
+  AND YEAR(SaleDate) = YEAR(GETDATE())
 GROUP BY e.Id, e.Name, e.Surname, e.FatherName, e.BranchId, e.Age, e.Salary
 ORDER BY TotalAmount DESC;
 
 --  19. Cari ayda ən çox qazanc gətirən işçinin məlumatlarını çıxaran sorğu yazın
-SELECT TOP 1 
-    e.Id,
-    e.Name,
-    e.Surname,
-    e.FatherName,
-    e.BranchId,
-    e.Age,
-    e.Salary,
-    SUM(p.Price * s.Quantity) AS TotalIncome
+SELECT TOP 1 e.*, SUM(p.Price * s.Quantity) AS TotalAmount
 FROM Sales s
 JOIN Employees e ON s.EmployeeId = e.Id
 JOIN Products p ON s.ProductId = p.Id
-WHERE MONTH(s.SaleDate) = MONTH(GETDATE())
-  AND YEAR(s.SaleDate) = YEAR(GETDATE())
-GROUP BY 
-    e.Id, e.Name, e.Surname, e.FatherName, 
-    e.BranchId, e.Age, e.Salary
-ORDER BY TotalIncome DESC;
+WHERE MONTH(SaleDate)=MONTH(GETDATE())
+  AND YEAR(SaleDate) = YEAR(GETDATE())
+GROUP BY e.Id, e.Name, e.Surname, e.FatherName, e.BranchId, e.Age, e.Salary
+ORDER BY TotalAmount DESC;
 
 --  20. Ən çox satış edən işçinin cari ay maaşını 50% artırın
 UPDATE Employees
@@ -192,6 +245,62 @@ WHERE Id = (
     JOIN Employees e ON s.EmployeeId = e.Id
     JOIN Products p ON s.ProductId = p.Id
     WHERE MONTH(SaleDate)=MONTH(GETDATE())
+      AND YEAR(SaleDate) = YEAR(GETDATE())
     GROUP BY e.Id
     ORDER BY SUM(p.Price * s.Quantity) DESC
 );
+
+-- 21. Hər filialdakı işçi sayını tapın
+SELECT 
+    b.Name AS BranchName,
+    COUNT(e.Id) AS EmployeeCount
+FROM Branches b
+LEFT JOIN Employees e ON e.BranchId = b.Id
+GROUP BY b.Name;
+
+-- 22. Hər filialda mövcud olan məhsul sayını tapın
+SELECT b.Name BranchName,
+COUNT(P.Id) ProductCount
+FROM Sales s 
+JOIN Branches b ON s.BranchId=b.Id
+JOIN Products p ON s.ProductId=p.Id
+GROUP BY b.Name
+
+-- 23. Hər işçinin cari ayda satdığı məhsulların yekun qiymətini tapın
+SELECT CONCAT(e.Name, ' ', e.Surname, ' ', e.FatherName) Employee, SUM(p.Price*s.Quantity) TotalAmount 
+FROM Sales s
+JOIN Employees e ON s.EmployeeId=e.Id
+JOIN Products p ON s.ProductId=p.Id
+WHERE MONTH(SaleDate)=MONTH(GETDATE())
+AND YEAR(s.SaleDate) = YEAR(GETDATE())
+GROUP BY e.Name, e.Surname, e.FatherName, p.Price, s.Quantity
+
+-- 24. Satılan hər məhsuldan 1% qazanc əldə etdiyini nəzərə alaraq cari ayda 
+--  hər bir satıcının maaşını hesablayın.
+
+
+-- 25. Hər filial üzrə cari aydakı qazancı hesablayın.
+SELECT b.Name Branch, SUM(p.Price * s.Quantity) MonthlyAmount
+FROM Sales s
+JOIN Products p ON s.ProductId = p.Id
+JOIN Branches b ON s.BranchId = b.Id
+WHERE MONTH(SaleDate) = MONTH(GETDATE())
+  AND YEAR(SaleDate) = YEAR(GETDATE())
+GROUP BY b.Name;
+
+-- 26. Cari ay üzrə aylıq hesabatı çıxaran sorğu yazın
+SELECT SUM(p.Price * s.Quantity) AS TotalThisMonth
+FROM Sales s
+JOIN Products p ON s.ProductId = p.Id
+WHERE MONTH(SaleDate)=MONTH(GETDATE())
+  AND YEAR(SaleDate) = YEAR(GETDATE());
+
+
+
+
+
+SELECT*FROM Categories
+SELECT*FROM Products
+SELECT*FROM Branches
+SELECT*FROM Employees
+SELECT*FROM Sales
